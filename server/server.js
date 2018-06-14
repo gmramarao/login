@@ -121,7 +121,7 @@ app.use('/app',(req, res, next)=>{
     }).catch((err)=>{
         res.json({succes: false, msg: err});
     })
-    
+    console.log('hellll');
     // if(req.body.token && req.body.user){
         
     // } else {
