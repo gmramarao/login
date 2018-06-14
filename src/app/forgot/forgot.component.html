@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="/action_page.php" style="border:1px solid #ccc">
+  <div class="container">
+    <h1>Forgot Password</h1>
+    <hr>
+
+    <label for="email"><b>Email</b></label>
+    <input type="text" placeholder="Enter Email" name="email" [(ngModel)]="eMail" required>
+    <div class="clearfix">
+      <button  class="login" (click)="gen_otp()">Generate OTP</button>
+    </div>
+    <div style="color:red">
+      {{err}}
+    </div>
+    <div style="color:green">
+      {{res}}
+    </div>
+    <div [hidden]="!res">
+      <label for="psw"><b>OTP</b></label>
+      <input type="password" placeholder="Enter OTP" name="psw"  [(ngModel)]="otp"  required>
+    
+      <div class="clearfix">
+        <button  class="login" (click)="verf_otp()">Verify OTP</button>
+      </div>
+    </div>
+    <div  [hidden]="!otp_verfy">
+      <label for="psw"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="psw"  [(ngModel)]="pwd"  required>
+      <label for="psw-repeat"><b>Repeat Password</b></label>
+      <input type="password" placeholder="Repeat Password" name="psw-repeat"  [(ngModel)]="rpt_pwd"  required>
+
+      <div class="clearfix">
+        <button type="button" class="cancelbtn">Cancel</button>
+        <button type="submit" class="signupbtn" (click)="forgot_pwd()">Submit</button>
+      </div>
+    </div>
+    <div class="clearfix">
+      <button  [routerLink]="['/login']"  class="login">Login</button>
+      <button  [routerLink]="['/signup']"  class="forgot">Signup</button>
+    </div>
+  </div>
+</form>
+
+</body>
+</html>
