@@ -7,7 +7,7 @@ const express = require('express'),
     cors = require('cors'),
     login_controller = require('./controller/login_controller.js'),
     morgan = require('morgan'),
-    express_validator = require('express-validator'),
+    express_validator = require('express-validator')
     db = require('./config/db_connection.js');
 
 app.use(body_parser());
@@ -19,11 +19,6 @@ app.get('/get', (req, res)=>{
     res.json('hello i am calling');
 })
 app.use('/login', login_controller);
-
-
-
-
-  
 
 
 

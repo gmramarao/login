@@ -8,52 +8,51 @@ const  jwt = require('jsonwebtoken'),
     Router = express.Router();
     
     
-// Router.post('/signup', (req, res)=>{
-//     req.checkBody('user', 'user is required').notEmpty();
-//     req.checkBody('pwd', 'password is required').notEmpty();
-//     req.asyncValidationErrors().then(()=>{
-//         async.waterfall([
-//             (callback)=>{
-//                 check_user(req.body.user).then((result)=>{
-//                     console.log(result);
-//                     if(result){
-//                         callback('user already existed', null);
-//                     } else {
-//                         callback(null, true);
-//                     }
-//                 }).catch((err)=>{
-//                     callback(err, null);
-//                 })
-//             },
-//             (user, callback)=>{
-//                 bcrypt.genSalt(salt_round,callback);
-//             },
-//             (salt, callback)=>{
-//                 bcrypt.hash(req.body.pwd, salt, callback);
-//             }, 
-//             (hash, callback)=>{
-//                 var data = {
-//                     user: req.body.user,
-//                     secret: "",
-//                     password: hash
-//                 }
-//                 var query = 'INSERT INTO login_info SET ?';
-//                 db.query(query, data, callback);
-//             }
-//         ], (err, results)=>{
-//             if(!err) {
-//                 res.json({success: true, msg:'succesfully created account'});
-//             } else {
-//                 res.json({success: false, msg:err});
-//             }
-//         })
-//     }).catch((err)=>{
-//         res.json({success: false, msg: err});
-//     })
+Router.post('/signup', (req, res)=>{
+    req.checkBody('user', 'user is required').notEmpty();
+    req.checkBody('pwd', 'password is required').notEmpty();
+    req.asyncValidationErrors().then(()=>{
+        async.waterfall([
+            (callback)=>{
+                check_user(req.body.user).then((result)=>{
+                    console.log(result);
+                    if(result){
+                        callback('user already existed', null);
+                    } else {
+                        callback(null, true);
+                    }
+                }).catch((err)=>{
+                    callback(err, null);
+                })
+            },
+            (user, callback)=>{
+                bcrypt.genSalt(salt_round,callback);
+            },
+            (salt, callback)=>{
+                bcrypt.hash(req.body.pwd, salt, callback);
+            }, 
+            (hash, callback)=>{
+                var data = {
+                    user: req.body.user,
+                    secret: "",
+                    password: hash
+                }
+                db.login_info.insert(data, callback);
+            }
+        ], (err, results)=>{
+            if(!err) {
+                res.json({success: true, msg:'succesfully created account'});
+            } else {
+                res.json({success: false, msg:err});
+            }
+        })
+    }).catch((err)=>{
+        res.json({success: false, msg: err});
+    })
 
     
-//     // res.json('i am also calling');
-// });   
+    // res.json('i am also calling');
+});   
 
 
 Router.post('/signin', (req, res)=>{
@@ -103,118 +102,116 @@ Router.post('/signin', (req, res)=>{
 })
 
 
-// Router.post('/otp_gen', (req, res)=>{
-//     var otp = Math.floor(1000 + Math.random() * 9000);
-//     req.checkBody('user', 'user is required').notEmpty();
-//     req.asyncValidationErrors().then(()=>{
-//         check_user(req.body.user).then((user)=>{
-//             if(user){
-//                 var transporter = nodemailer.createTransport({
-//                     service: 'gmail',
-//                     auth: {
-//                            user: 'ramarao.g92@gmail.com',
-//                            pass: '8500759698'
-//                        }
-//                 });
+Router.post('/otp_gen', (req, res)=>{
+    var otp = Math.floor(1000 + Math.random() * 9000);
+    req.checkBody('user', 'user is required').notEmpty();
+    req.asyncValidationErrors().then(()=>{
+        check_user(req.body.user).then((user)=>{
+            if(user){
+                var transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                           user: 'ramarao.g92@gmail.com',
+                           pass: '8500759698'
+                       }
+                });
                 
-//                 const mailOptions = {
-//                     from: 'ramarao.g92@gmail.com', // sender address
-//                     to: req.body.user, // list of receivers
-//                     subject: 'Access token', // Subject line
-//                     html: '<p>Your access token is:'+ otp +'</p>'// plain text body
-//                 };
-//                 transporter.sendMail(mailOptions, function (err, info) {
-//                     if(!err){
-//                         console.log(info);
-//                         var query = "UPDATE login_info SET OTP = ? WHERE user = ?";
-//                         db.query(query, [otp, req.body.user], (err, doc)=>{
-//                             if(!err){
-//                                 res.json({success: true, msg: otp});
-//                             } else {
-//                                 res.json({success: false, msg: err});
-//                             }   
-//                         })
-//                     }
-//                     else{
-//                         console.log(err);
-//                         res.json({success: false, msg:err});
-//                     }
-//                 });
+                const mailOptions = {
+                    from: 'ramarao.g92@gmail.com', // sender address
+                    to: req.body.user, // list of receivers
+                    subject: 'Access token', // Subject line
+                    html: '<p>Your access token is:'+ otp +'</p>'// plain text body
+                };
+                transporter.sendMail(mailOptions, function (err, info) {
+                    if(!err){
+                        console.log(info);
+                        db.login_info.update({user: req.body.user}, {$set:{OTP: otp}}, (err, doc)=>{
+                            if(!err){
+                                res.json({success: true, msg: otp});
+                            } else {
+                                res.json({success: false, msg: err});
+                            }   
+                        })
+                    }
+                    else{
+                        console.log(err);
+                        res.json({success: false, msg:err});
+                    }
+                });
                 
-//             } else {
-//                 res.json({success: false, msg: 'eMail not existed'});
-//             }
-//         })
-//     }).catch((err)=>{
-//         res.json({success: false, msg: err});
-//     })
-// })
+            } else {
+                res.json({success: false, msg: 'eMail not existed'});
+            }
+        })
+    }).catch((err)=>{
+        res.json({success: false, msg: err});
+    })
+})
 
 
-// Router.post('/otp_verify', (req, res)=>{
-//     req.checkBody('user', 'user is required').notEmpty();
-//     req.checkBody('otp', 'otp is required').notEmpty();
-//     req.asyncValidationErrors().then(()=>{
-//         check_user(req.body.user).then((user)=>{
-//             if(user){
-//                 if(user[0].OTP == req.body.otp){
-//                     res.json({success: true, msg: 'OTP matched'});
-//                 } else {
-//                     res.json({success: false, msg: 'OTP not matched'});
-//                 }
-//             } else {
-//                 res.json({success: false, msg: 'User not existed'});
-//             }
+Router.post('/otp_verify', (req, res)=>{
+    req.checkBody('user', 'user is required').notEmpty();
+    req.checkBody('otp', 'otp is required').notEmpty();
+    req.asyncValidationErrors().then(()=>{
+        check_user(req.body.user).then((user)=>{
+            if(user){
+                if(user[0].OTP == req.body.otp){
+                    res.json({success: true, msg: 'OTP matched'});
+                } else {
+                    res.json({success: false, msg: 'OTP not matched'});
+                }
+            } else {
+                res.json({success: false, msg: 'User not existed'});
+            }
             
-//         }).catch((err)=>{
-//             res.json({success: false, msg: err});
-//         })
+        }).catch((err)=>{
+            res.json({success: false, msg: err});
+        })
 
-//     }).catch((err)=>{
-//         res.json({success: false, msg: err});
-//     })    
-// })
+    }).catch((err)=>{
+        res.json({success: false, msg: err});
+    })    
+})
 
 
-// Router.put('/forgot_pwd', (req, res)=>{
-//     req.checkBody('user', 'User is required').notEmpty();
-//     req.checkBody('pwd', 'Password is required').notEmpty();
-//     req.asyncValidationErrors().then(()=>{
-//         check_user(req.body.user).then((user)=>{
-//             if(user){
-//                 async.waterfall([
-//                     (callback)=>{
-//                         bcrypt.genSalt(salt_round, callback);
-//                     }, 
-//                     (salt, callback)=>{
-//                         bcrypt.hash(req.body.pwd, salt, callback);
-//                     },
-//                     (hash, callback)=>{
-//                         var query = "UPDATE login_info SET password = ? WHERE user= ?";
-//                         db.query(query, [hash, req.body.user], callback);
-//                     }
-//                 ], (err, results)=>{
-//                     if(!err){
-//                         res.json({success: true, msg: results});
-//                     } else {
-//                         console.log(err);
-//                         res.json({success: false, msg: err});
-//                     }
+Router.put('/forgot_pwd', (req, res)=>{
+    req.checkBody('user', 'User is required').notEmpty();
+    req.checkBody('pwd', 'Password is required').notEmpty();
+    req.asyncValidationErrors().then(()=>{
+        check_user(req.body.user).then((user)=>{
+            if(user){
+                async.waterfall([
+                    (callback)=>{
+                        bcrypt.genSalt(salt_round, callback);
+                    }, 
+                    (salt, callback)=>{
+                        bcrypt.hash(req.body.pwd, salt, callback);
+                    },
+                    (hash, callback)=>{
+                        db.login_info.update({user: req.body.user}, {$set:{password: hash}}, callback);
+                    }
+                ], (err, results)=>{
+                    if(!err){
+                        res.json({success: true, msg: results});
+                    } else {
+                        console.log(err);
+                        res.json({success: false, msg: err});
+                    }
 
-//                 })
+                })
                 
-//             } else {
-//                 res.json({success: false, msg: 'User not existed'});
-//             }
+            } else {
+                res.json({success: false, msg: 'User not existed'});
+            }
             
-//         }).catch((err)=>{
-//             res.json({success: false, msg: err});
-//         })
+        }).catch((err)=>{
+            res.json({success: false, msg: err});
+        })
 
-//     }).catch((err)=>{
-//         res.json({success: false, msg: err});
-//     })    
-// })
+    }).catch((err)=>{
+        res.json({success: false, msg: err});
+    })    
+})
 
 
 
@@ -236,15 +233,5 @@ var check_user = (user)=>{
         })
     })
 };
-
-
-// var query = "ALTER TABLE login_info ADD OTP VARCHAR(50)";
-// db.query(query, (err, res)=>{
-//     if(!err){
-//         console.log(res);
-//     } else {
-//         console.log(err);
-//     }
-// })
 
 module.exports = Router;
